@@ -1,6 +1,6 @@
-__gitlog__ = """513fb79
-Updated pol.py -- fixed minor bugs
+__gitlog__ = """838ec5f
+hurpa-durr
 --
 David Moore
 damo@sas.upenn.edu
-2012-02-24 11:20:18 -0500"""
+2012-03-28 14:29:19 -0400"""
