@@ -73,7 +73,7 @@ class AntennaDualPol(fit.Antenna):
     def _update_phsoff(self):
         self._phsoff = {}
         for k in self._phsoff:
-        self._phsoff[k] = n.polyval(self.__phsoff[k], self.beam.afreqs)
+            self._phsoff[k] = n.polyval(self.__phsoff[k], self.beam.afreqs)
     def phsoff(self):
         pol = self.get_active_pol()
         return self._phsoff[pol]
