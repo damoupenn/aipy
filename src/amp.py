@@ -298,7 +298,7 @@ class AntennaArray(phs.AntennaArray):
                 x,y,z = self._cache['s_top']
                 resp = self[c].bm_response((x,y,z)).transpose()
                 self._cache[c][p] = resp
-        return self._cache[j][pi] * n.conjugate(self._cache[i][pj])
+        return self._cache[j][pj] * n.conjugate(self._cache[i][pi])
     
     def sim_cache(self, s_eqs, jys=n.array([1.]), mfreqs=0.150,
             ionrefs=(0.,0.), srcshapes=(0,0,0)):

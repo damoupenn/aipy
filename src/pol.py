@@ -68,15 +68,22 @@ def ParAng(ha,dec,lat):
 #  / ___ \| | | | ||  __/ | | | | | | (_| |
 # /_/   \_\_| |_|\__\___|_| |_|_| |_|\__,_|
 
-class AntennaDualPol(fit.Antenna):
+
+class Antenna(fit.Antenna):
     '''XXX tell user that phsoff must be a dict'''
+    def __init__(self,x,y,z,beam,d=0., **kwargs):
+        fit.Antenna.__init__(self,x,y,z,beam,**kwargs)
+        self._update_phsoff()
+        self.d = d #I may want to update this to be a polynomial or something later (dfm)
+    #pol-specific updates to phs.py
     def _update_phsoff(self):
         self._phsoff = {}
-        for k in self._phsoff:
+        for k in self.__phsoff:
             self._phsoff[k] = n.polyval(self.__phsoff[k], self.beam.afreqs)
     def phsoff(self):
         pol = self.get_active_pol()
         return self._phsoff[pol]
+    #pol-specific updates to amp.py
     def _update_gain(self):
         self._gain = {}
         for k in self.bp_r:
@@ -87,6 +94,7 @@ class AntennaDualPol(fit.Antenna):
         pol = self.get_active_pol()
         if conj: return n.conjugate(self._gain[pol])
         else: return self._gain[pol]
+    #pol-specific updates to fit.py
     def get_params(self,prm_list=['*']):
         """Return all fitable parameters in a dictionary."""
         x,y,z = self.pos
@@ -132,11 +140,7 @@ class AntennaDualPol(fit.Antenna):
             except(KeyError): pass
         if changed: self.update()
         return changed
-
-class Antenna(AntennaDualPol):
-    def __init__(self,x,y,z,beam,d=0., **kwargs):
-        fit.Antenna.__init__(self,x,y,z,beam,**kwargs)
-        self.d = d #I may want to update this to be a polynomial or something later (dfm)
+    #new stuff 
     def G_i(self):
         """2x2 gain matrix"""
         amp_i = self.passband()
