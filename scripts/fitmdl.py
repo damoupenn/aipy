@@ -242,7 +242,6 @@ elif opts.master:
     print '------------------------------------------------------------'
             
     
-
 elif not opts.snap:
     rv = a.optimize.fmin(
         fit_func, prm_list,
