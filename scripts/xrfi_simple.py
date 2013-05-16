@@ -10,15 +10,15 @@ o.add_option('-c', '--chan', dest='chan',
     help='Manually flag channels before xrfi processing.  Options are "<chan1 #>,..." (a list of channels), or "<chan1 #>_<chan2 #>" (a range of channels).  Default is None.')
 o.add_option('-n', '--nsig', dest='nsig', default=2., type='float',
     help='Number of standard deviations above mean to flag if neither --dt nor --df are specified.  Default 2.')
-o.add_option('--df', dest='df', type='float', 
+o.add_option('--df', dest='df', type='float',
     help='Number of standard deviations above mean to flag, after taking derivative of frequency axis')
 o.add_option('--dt', dest='dt', type='float',
     help='Number of standard deviations above mean to flag, after taking derivative of time axis')
 o.add_option('--combine', dest='combine', action='store_true',
     help='Use the same mask for all baselines/pols (and use thresh to decide how many concidences it takes to flag all data.')
-o.add_option('--to_npz', 
+o.add_option('--to_npz',
     help='Instead of applying mask to data, store it as npz of this name.  May only be used along with --combine.')
-o.add_option('--from_npz', 
+o.add_option('--from_npz',
     help='Apply mask to data from this npz file (generated with --to_npz).  May only be used along with --combine.')
 o.add_option('-t', '--thresh', dest='thresh', default=1, type='int',
     help='Number of flagging coincidences (baselines/pols) required to flag a time/chan.')
@@ -54,27 +54,22 @@ for uvfile in args:
         data,mask,times = {}, {}, []
         for (uvw,t,(i,j)), d, f in uvi.all(raw=True):
             if len(times) == 0 or times[-1] != t: times.append(t)
-            bl = a.miriad.ij2bl(i,j)
-            pol = uvi['pol']
-            if not pol in data:
-                data[pol] = {}
-                mask[pol] = {}
-            if not bl in data[pol]:
-                data[pol][bl] = {}
-                mask[pol][bl] = {}
+            blp = a.pol.ijp2blp(i,j,uvi['pol'])
+            if not blp in data:
+                data[blp] = {}
+                mask[blp] = {}
             # Manually flag channels
             f[chans] = 1
-            mask[pol][bl][t] = f
-            data[pol][bl][t] = d
+            mask[blp][t] = f
+            data[blp][t] = d
 
         # Generate statistical mask
-        for pol in data:
-          for bl in data[pol]:
-            i, j = a.miriad.bl2ij(bl)
-            data_times = data[pol][bl].keys()
+        for blp in data:
+            i,j,p = a.pol.blp2ijp(blp)
+            data_times = data[blp].keys()
             data_times.sort()
-            d = n.array([data[pol][bl][t] for t in data_times])
-            m = n.array([mask[pol][bl][t] for t in data_times])
+            d = n.array([data[blp][t] for t in data_times])
+            m = n.array([mask[blp][t] for t in data_times])
             if opts.df != None:
                 ddf = d[:,1:-1] - .5 * (d[:,:-2] + d[:,2:])
                 ddf2 = n.abs(ddf)**2
@@ -94,18 +89,17 @@ for uvfile in args:
                 med = n.median(ad)
                 sig = n.sqrt(n.median(n.abs(ad-med)**2))
                 m |= n.where(ad > med + opts.nsig * sig, 1, 0)
-            for i, t in enumerate(data_times): mask[pol][bl][t] |= m[i]
+            for i, t in enumerate(data_times):
+                mask[blp][t] |= m[i]
         if opts.combine:
             new_mask = {}
-            for pol in mask:
-              for bl in mask[pol]:
-                for t in mask[pol][bl]:
-                    new_mask[t] = new_mask.get(t,0)+mask[pol][bl][t].astype(n.int)
+            for blp in mask:
+                new_mask[t] = new_mask.get(t,0)+mask[blp][t].astype(n.int)
             for t in new_mask:
                 m = n.where(new_mask[t] >= opts.thresh, 1, 0)
                 for pol in mask:
                   for bl in mask[pol]:
-                    mask[pol][bl][t] = m
+                    mask[blp][t] = m
         del(uvi)
 
     if opts.to_npz:
@@ -120,17 +114,20 @@ for uvfile in args:
         # Generate a pipe for applying the mask to data as it comes in.
         def rfi_mfunc(uv, preamble, data, flags):
             uvw, t, (i,j) = preamble
-            bl = a.miriad.ij2bl(i,j)
+            blp = a.pol.ijp2blp(i,j,uv['pol'])
             if opts.combine:
-                try: m = mask.values()[0].values()[0][t]
-                except(KeyError): m = n.ones_like(flags) # default to flagging
-            else: m = mask[uv['pol']][bl][t]
+                try:
+                    m = mask.values()[0].values()[0][t]
+                except(KeyError):
+                    m = n.ones_like(flags) # default to flagging
+            else:
+                try:
+                    m = mask[blp][t]
+                except(KeyError):
+                    m = n.ones_like(flags)
             return preamble, n.where(m, 0, data), m
 
         uvi = a.miriad.UV(uvfile)
         uvo = a.miriad.UV(uvofile, status='new')
         uvo.init_from_uv(uvi)
         uvo.pipe(uvi, mfunc=rfi_mfunc, raw=True, append2hist=' '.join(sys.argv)+'\n')
-
-
-
