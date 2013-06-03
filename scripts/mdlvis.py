@@ -18,7 +18,7 @@ o.add_option('-f', '--flag', dest='flag', action='store_true',
     help='If outputting a simulated data set, mimic the data flagging of the original dataset.')
 #o.add_option('-m', '--map', dest='map',
 #    help='The Healpix map to use for simulation input.')
-#o.add_option('--iepoch', dest='iepoch', default=ephem.J2000, 
+#o.add_option('--iepoch', dest='iepoch', default=ephem.J2000,
 #    help='The epoch of coordinates in the map. Default J2000.')
 #o.add_option('--freq', dest='freq', default=.150, type='float',
 #    help='Frequency of flux data in map.')
@@ -36,8 +36,10 @@ o.add_option('--startjd', dest='startjd', default=2454600., type='float',
     help='Julian Date to start observation if no input data to mimic.  Default is 2454600')
 o.add_option('--endjd', dest='endjd', default=2454601., type='float',
     help='Julian Date to end observation if no input data to mimic.  Default is 2454601')
-o.add_option('--pol', dest='pol', 
+o.add_option('--pol', dest='pol',
     help='Polarizations to simulate (xx,yy,xy,yx) if starting file from scratch.')
+o.add_option('--outfile',dest='outfile',default='new.uv',
+        help='Name of Output File')
 opts, args = o.parse_args(sys.argv[1:])
 
 assert(len(args) > 0 or (opts.mode == 'sim' and not opts.flag and not (opts.pol is None)))
@@ -119,7 +121,7 @@ def mdl(uv, p, d, f):
         #eqs = n.concatenate(eqs, axis=-1)
         #flx = n.concatenate(flx)
         #ind = n.concatenate(ind)
-        aa.sim_cache(eqs, flx, mfreqs=mfq, 
+        aa.sim_cache(eqs, flx, mfreqs=mfq,
             ionrefs=(dras,ddecs), srcshapes=(a1s,a2s,ths))
     aa.set_active_pol(pol)
     sd = aa.sim(i, j)
@@ -156,7 +158,7 @@ if len(args) > 0:
 else:
     # Initialize a new UV file
     pols = opts.pol.split(',')
-    uv = a.miriad.UV('new.uv', status='new')
+    uv = a.miriad.UV(opts.outfile, status='new')
     uv._wrhd('obstype','mixed-auto-cross')
     uv._wrhd('history','MDLVIS: created file.\nMDLVIS: ' + ' '.join(sys.argv) + '\n')
     uv.add_var('telescop','a'); uv['telescop'] = 'AIPY'
