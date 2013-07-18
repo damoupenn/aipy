@@ -10,12 +10,12 @@ class PointingError(Exception):
     def __init__(self, value): self.parameter = value
     def __str__(self): return str(self.parameter)
 
-#  _   _ _   _ _ _ _           _____                 _   _                 
-# | | | | |_(_) (_) |_ _   _  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
+#  _   _ _   _ _ _ _           _____                 _   _
+# | | | | |_(_) (_) |_ _   _  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___
 # | | | | __| | | | __| | | | | |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
 # | |_| | |_| | | | |_| |_| | |  _|| |_| | | | | (__| |_| | (_) | | | \__ \
 #  \___/ \__|_|_|_|\__|\__, | |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
-#                      |___/        
+#                      |___/
 
 def juldate2ephem(num):
     """Convert Julian date to ephem date, measured from noon, Dec. 31, 1899."""
@@ -25,12 +25,12 @@ def ephem2juldate(num):
     """Convert ephem date (measured from noon, Dec. 31, 1899) to Julian date."""
     return float(num + 2415020.)
 
-#  ____           _ _       ____            _       
-# |  _ \ __ _  __| (_) ___ | __ )  ___   __| |_   _ 
+#  ____           _ _       ____            _
+# |  _ \ __ _  __| (_) ___ | __ )  ___   __| |_   _
 # | |_) / _` |/ _` | |/ _ \|  _ \ / _ \ / _` | | | |
 # |  _ < (_| | (_| | | (_) | |_) | (_) | (_| | |_| |
 # |_| \_\__,_|\__,_|_|\___/|____/ \___/ \__,_|\__, |
-#                                             |___/ 
+#                                             |___/
 
 class RadioBody:
     """The location of a celestial source."""
@@ -60,12 +60,12 @@ class RadioBody:
             if ncrd == 2: return (self.az, self.alt)
             return coord.azalt2top((self.az, self.alt))
 
-#  ____           _ _       _____ _              _ ____            _       
-# |  _ \ __ _  __| (_) ___ |  ___(_)_  _____  __| | __ )  ___   __| |_   _ 
+#  ____           _ _       _____ _              _ ____            _
+# |  _ \ __ _  __| (_) ___ |  ___(_)_  _____  __| | __ )  ___   __| |_   _
 # | |_) / _` |/ _` | |/ _ \| |_  | \ \/ / _ \/ _` |  _ \ / _ \ / _` | | | |
 # |  _ < (_| | (_| | | (_) |  _| | |>  <  __/ (_| | |_) | (_) | (_| | |_| |
 # |_| \_\__,_|\__,_|_|\___/|_|   |_/_/\_\___|\__,_|____/ \___/ \__,_|\__, |
-#                                                                    |___/ 
+#                                                                    |___/
 
 class RadioFixedBody(ephem.FixedBody, RadioBody):
     """A source at fixed RA,DEC.  Combines ephem.FixedBody with RadioBody."""
@@ -82,15 +82,15 @@ class RadioFixedBody(ephem.FixedBody, RadioBody):
         ephem.FixedBody.compute(self, observer)
         RadioBody.compute(self, observer)
 
-#  ____           _ _      ____                  _       _ 
+#  ____           _ _      ____                  _       _
 # |  _ \ __ _  __| (_) ___/ ___| _ __   ___  ___(_) __ _| |
 # | |_) / _` |/ _` | |/ _ \___ \| '_ \ / _ \/ __| |/ _` | |
 # |  _ < (_| | (_| | | (_) |__) | |_) |  __/ (__| | (_| | |
 # |_| \_\__,_|\__,_|_|\___/____/| .__/ \___|\___|_|\__,_|_|
-#                               |_|                        
+#                               |_|
 
 class RadioSpecial(RadioBody, object):
-    """A moving source (Sun,Moon,planets).  Combines ephem versions of these 
+    """A moving source (Sun,Moon,planets).  Combines ephem versions of these
     objects with RadioBody."""
     def __init__(self,name, mfreq=.150,
             ionref=(0.,0.), srcshape=(0.,0.,0.), **kwargs):
@@ -98,12 +98,12 @@ class RadioSpecial(RadioBody, object):
         RadioBody.__init__(self, name, mfreq, ionref, srcshape)
         self.Body = eval('ephem.%s()' % name)
     def __getattr__(self, nm):
-        """First try to access attribute from this class, but if that fails, 
+        """First try to access attribute from this class, but if that fails,
         try to get it from the underlying ephem object."""
         try: return object.__getattr__(self, nm)
         except(AttributeError): return self.Body.__getattribute__(nm)
     def __setattr__(self, nm, val):
-        """First try to set attribute for this class, buf if that fails, 
+        """First try to set attribute for this class, buf if that fails,
         try to set it for the underlying ephem object."""
         try: object.__setattr__(self, nm, val)
         except(AttributeError): return setattr(self.Body, nm, val)
@@ -111,12 +111,12 @@ class RadioSpecial(RadioBody, object):
         self.Body.compute(observer)
         RadioBody.compute(self, observer)
 
-#  ____            ____      _        _             
-# / ___| _ __ ___ / ___|__ _| |_ __ _| | ___   __ _ 
+#  ____            ____      _        _
+# / ___| _ __ ___ / ___|__ _| |_ __ _| | ___   __ _
 # \___ \| '__/ __| |   / _` | __/ _` | |/ _ \ / _` |
 #  ___) | | | (__| |__| (_| | || (_| | | (_) | (_| |
 # |____/|_|  \___|\____\__,_|\__\__,_|_|\___/ \__, |
-#                                             |___/ 
+#                                             |___/
 
 class SrcCatalog(dict):
     """A catalog of celestial sources.  Can be initialized with a list
@@ -145,7 +145,7 @@ class SrcCatalog(dict):
         return crds.transpose()
     def get(self, attribute, srcs=None):
         """Return the specified source attribute (e.g. "mfreq" for src.mfreq)
-        in an array for all src names in 'srcs'.  If not provided, defaults to 
+        in an array for all src names in 'srcs'.  If not provided, defaults to
         all srcs in catalog."""
         if srcs is None: srcs = self.keys()
         return n.array([getattr(self[s], attribute) for s in srcs]).transpose()
@@ -175,8 +175,8 @@ class Beam:
         self.chans = active_chans
         self.update()
 
-#     _          _                         
-#    / \   _ __ | |_ ___ _ __  _ __   __ _ 
+#     _          _
+#    / \   _ __ | |_ ___ _ __  _ __   __ _
 #   / _ \ | '_ \| __/ _ \ '_ \| '_ \ / _` |
 #  / ___ \| | | | ||  __/ | | | | | | (_| |
 # /_/   \_\_| |_|\__\___|_| |_|_| |_|\__,_|
@@ -198,7 +198,7 @@ class Antenna:
         self.beam.select_chans(active_chans)
         self.update()
     def set_active_pol(self, pol):
-        assert(pol in 'xy') # We only do linear polarizations for now
+        assert(pol in 'xyIQUV') # We only do linear polarizations for now
         self.active_pol = pol
     def get_active_pol(self):
         if self.active_pol is None: raise RuntimeError('No active polarization set (use Antenna.set_active_pol)')
@@ -216,12 +216,12 @@ class Antenna:
     def __sub__(self, a): return self.pos - a.pos
     def __rsub__(self, a): return a.pos - self.pos
 
-#     _                         _                    _   _             
-#    / \   _ __ _ __ __ _ _   _| |    ___   ___ __ _| |_(_) ___  _ __  
-#   / _ \ | '__| '__/ _` | | | | |   / _ \ / __/ _` | __| |/ _ \| '_ \ 
+#     _                         _                    _   _
+#    / \   _ __ _ __ __ _ _   _| |    ___   ___ __ _| |_(_) ___  _ __
+#   / _ \ | '__| '__/ _` | | | | |   / _ \ / __/ _` | __| |/ _ \| '_ \
 #  / ___ \| |  | | | (_| | |_| | |__| (_) | (_| (_| | |_| | (_) | | | |
 # /_/   \_\_|  |_|  \__,_|\__, |_____\___/ \___\__,_|\__|_|\___/|_| |_|
-#                         |___/                                        
+#                         |___/
 
 class ArrayLocation(ephem.Observer):
     """The location and time of an observation."""
@@ -250,15 +250,15 @@ class ArrayLocation(ephem.Observer):
         self.date, self.epoch = t, t
         self._eq2now = coord.rot_m(-self.sidereal_time(), n.array([0.,0.,1.]))
 
-#     _          _                            _                         
-#    / \   _ __ | |_ ___ _ __  _ __   __ _   / \   _ __ _ __ __ _ _   _ 
+#     _          _                            _
+#    / \   _ __ | |_ ___ _ __  _ __   __ _   / \   _ __ _ __ __ _ _   _
 #   / _ \ | '_ \| __/ _ \ '_ \| '_ \ / _` | / _ \ | '__| '__/ _` | | | |
 #  / ___ \| | | | ||  __/ | | | | | | (_| |/ ___ \| |  | | | (_| | |_| |
 # /_/   \_\_| |_|\__\___|_| |_|_| |_|\__,_/_/   \_\_|  |_|  \__,_|\__, |
-#                                                                 |___/ 
+#                                                                 |___/
 
 class AntennaArray(ArrayLocation):
-    """A collection of antennas, their spacings, and location/time of 
+    """A collection of antennas, their spacings, and location/time of
     observations."""
     def __init__(self, location, ants, **kwargs):
         """ location = (lat,long,[elev]) of array
@@ -271,7 +271,7 @@ class AntennaArray(ArrayLocation):
     def __setitem__(self, *args): return self.ants.__setitem__(*args)
     def __len__(self): return self.ants.__len__()
     def set_active_pol(self,pol):
-        assert(pol in ('xx','xy','yx','yy')) # We only do linear pol for now
+        assert(pol in ('xx','xy','yx','yy','I','Q','U','V'))
         self.active_pol = pol
     def get_active_pol(self, split=False):
         if self.active_pol is None: raise RuntimeError('No active polarization set (use AntennaArray.set_active_pol)')
@@ -285,31 +285,31 @@ class AntennaArray(ArrayLocation):
         for a in self: a.select_chans(active_chans)
         self.update()
     def ij2bl(self, i, j):
-        """Convert baseline i,j (0 indexed) to Miriad's (i+1) << 8 | (j+1) 
+        """Convert baseline i,j (0 indexed) to Miriad's (i+1) << 8 | (j+1)
         indexing scheme."""
-        return ij2bl(i,j) 
+        return ij2bl(i,j)
     def bl2ij(self, bl):
-        """Convert Miriad's (i+1) << 8 | (j+1) baseline indexing scheme to 
+        """Convert Miriad's (i+1) << 8 | (j+1) baseline indexing scheme to
         i,j (0 indexed)"""
         return bl2ij(bl)
     def bl_indices(self, auto=True, cross=True):
         """Return bl indices for baselines in the array."""
         if auto:
-            if cross: return [self.ij2bl(i,j) 
-                for i in range(len(self)) 
+            if cross: return [self.ij2bl(i,j)
+                for i in range(len(self))
                 for j in range(i,len(self))]
             else: return [self.ij2bl(i,i) for i in range(len(self))]
         else:
-            if cross: return [self.ij2bl(i,j) 
-                for i in range(len(self)) 
+            if cross: return [self.ij2bl(i,j)
+                for i in range(len(self))
                 for j in range(i+1,len(self))]
             else: return []
     def get_afreqs(self):
         """Return array of frequencies that are active for simulation."""
         return self[0].beam.afreqs
     def get_baseline(self, i, j, src='z'):
-        """Return the baseline corresponding to i,j in various coordinate 
-        projections: src='e' for current equatorial, 'z' for zenith 
+        """Return the baseline corresponding to i,j in various coordinate
+        projections: src='e' for current equatorial, 'z' for zenith
         topocentric, 'r' for unrotated equatorial, or a RadioBody for
         projection toward that source."""
         bl = self[j] - self[i]
@@ -334,7 +334,7 @@ class AntennaArray(ArrayLocation):
         self.set_active_pol(pi+pj)
         return self[j].phsoff() - self[i].phsoff()
     def gen_uvw(self, i, j, src='z', w_only=False):
-        """Compute uvw coordinates of baseline relative to provided RadioBody, 
+        """Compute uvw coordinates of baseline relative to provided RadioBody,
         or 'z' for zenith uvw coordinates.  If w_only is True, only w (instead
         of (u,v,w) will be returned)."""
         x,y,z = self.get_baseline(i,j, src=src)
@@ -347,8 +347,8 @@ class AntennaArray(ArrayLocation):
         x.shape += (1,); y.shape += (1,); z.shape += (1,)
         if w_only: return n.dot(z,afreqs)
         else: return n.array([n.dot(x,afreqs), n.dot(y,afreqs), n.dot(z,afreqs)])
-    def gen_phs(self, src, i, j, mfreq=.150, ionref=None, srcshape=None, 
-            resolve_src=False):
+    def gen_phs(self, src, i, j, mfreq=.150, ionref=None, srcshape=None,
+            resolve_src=False, nocal=False):
         """Return phasing that is multiplied to data to point to src."""
         if ionref is None:
             try: ionref = src.ionref
@@ -356,8 +356,8 @@ class AntennaArray(ArrayLocation):
         if not ionref is None or resolve_src: u,v,w = self.gen_uvw(i,j,src=src)
         else: w = self.gen_uvw(i,j,src=src, w_only=True)
         if not ionref is None: w += self.refract(u, v, mfreq=mfreq, ionref=ionref)
-        o = self.get_phs_offset(i,j)
-        phs = n.exp(-1j*2*n.pi*(w + o))
+        phs = n.exp(-1j*2*n.pi*(w))
+        if not nocal: phs *= n.exp(-1j*2*n.pi*(self.get_phs_offset(i,j)))
         if resolve_src:
             if srcshape is None:
                 try: srcshape = src.srcshape
@@ -365,14 +365,14 @@ class AntennaArray(ArrayLocation):
             if not srcshape is None: phs *= self.resolve_src(u, v, srcshape=srcshape)
         return phs.squeeze()
     def resolve_src(self, u, v, srcshape=(0,0,0)):
-        """Adjust amplitudes to reflect resolution effects for a uniform 
+        """Adjust amplitudes to reflect resolution effects for a uniform
         elliptical disk characterized by srcshape:
-        srcshape = (a1,a2,th) where a1,a2 are angular sizes along the 
+        srcshape = (a1,a2,th) where a1,a2 are angular sizes along the
             semimajor, semiminor axes, and th is the angle (in radians) of
             the semimajor axis from E."""
         a1,a2,th = srcshape
         try:
-            if len(u.shape) > len(a1.shape): 
+            if len(u.shape) > len(a1.shape):
                 a1.shape += (1,); a2.shape += (1,); th.shape += (1,)
         except(AttributeError): pass
         ru = a1 * (u*n.cos(th) - v*n.sin(th))
@@ -401,11 +401,11 @@ class AntennaArray(ArrayLocation):
         except(AttributeError): pass
         f2 = self.get_afreqs()**2 ; f2.shape = (1, f)
         return (dra*u_sf + ddec*v_sf) * mfreq**2 / f2
-    def phs2src(self, data, src, i, j, mfreq=.150, ionref=None, srcshape=None):
+    def phs2src(self, data, src, i, j, mfreq=.150, ionref=None, srcshape=None, nocal=False):
         """Apply phasing to zenith-phased data to point to src."""
-        return data * self.gen_phs(src, i, j, 
-            mfreq=mfreq, ionref=ionref, srcshape=srcshape, resolve_src=False)
-    def unphs2src(self,data,src, i, j, mfreq=.150, ionref=None, srcshape=None):
+        return data * self.gen_phs(src, i, j,
+            mfreq=mfreq, ionref=ionref, srcshape=srcshape, resolve_src=None, nocal=nocal)
+    def unphs2src(self,data,src, i, j, mfreq=.150, ionref=None, srcshape=None, nocal=False):
         """Remove phasing from src-phased data to point to zenith."""
         return data / self.gen_phs(src, i, j,
-            mfreq=mfreq, ionref=ionref, srcshape=srcshape, resolve_src=False)
+            mfreq=mfreq, ionref=ionref, srcshape=srcshape, resolve_src=None, nocal=nocal)
