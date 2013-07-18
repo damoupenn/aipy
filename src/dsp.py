@@ -16,4 +16,7 @@ WINDOW_FUNC = {
 
 def gen_window(L, window='hamming'):
     '''Return the specified window (see WINDOW_FUNC) for a length L.'''
-    return n.fromfunction(lambda x: WINDOW_FUNC[window](x,L), (L,))
+    if window == 'none':
+        return n.ones(L)
+    else:
+        return n.fromfunction(lambda x: WINDOW_FUNC[window](x,L), (L,))
