@@ -9,14 +9,11 @@
 #define         MAXIANT         2048
 #define		MAXANT		2048
 #define		MAXANT2		28
-#if 0
-#define         MAXBASE         ((MAXANT * (MAXANT + 1)) / 2) */
-#else
-#define		MAXBASE		524800
-#endif
+#define         MAXBASE         ((MAXANT * (MAXANT + 1)) / 2)
+//#define		MAXBASE		524800
 #define		MAXBASE2	500
 #define		MAXCHAN		4096
 #define		MAXNAX		7
 #define		MAXWIN		16
-#define		MAXBUF		4194304
-
+//#define		MAXBUF		4194304
+#define     MAXBUF  17179869184

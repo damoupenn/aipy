@@ -25,7 +25,6 @@ except:
 open('src/__branch__.py','w').write('__branch__ = \"%s\"'%gitbranch)
 open('src/__gitlog__.py','w').write('__gitlog__ = \"\"\"%s\"\"\"'%gitlog)
 
-
 def get_description():
     lines = [L.strip() for L in open('README').readlines()]
     d_start = None
@@ -61,12 +60,12 @@ setup(name = 'aipy',
     packages = ['aipy', 'aipy.optimize','aipy._src'],
     ext_modules = [
         Extension('aipy._healpix',
-            ['src/_healpix/healpix_wrap.cpp', 
+            ['src/_healpix/healpix_wrap.cpp',
             'src/_healpix/cxx/Healpix_cxx/healpix_base.cc'],
             include_dirs = [numpy.get_include(), 'src/_healpix/cxx/cxxsupport',
                 'src/_healpix/cxx/Healpix_cxx']),
         Extension('aipy._alm',
-            ['src/_healpix/alm_wrap.cpp', 
+            ['src/_healpix/alm_wrap.cpp',
             'src/_healpix/cxx/Healpix_cxx/alm_map_tools.cc',
             'src/_healpix/cxx/libfftpack/ls_fft.c',
             'src/_healpix/cxx/libfftpack/bluestein.c',
@@ -78,7 +77,7 @@ setup(name = 'aipy',
         Extension('aipy._miriad', ['src/_miriad/miriad_wrap.cpp'] + \
             indir('src/_miriad/mir', ['uvio.c','hio.c','pack.c','bug.c',
                 'dio.c','headio.c','maskio.c']),
-            include_dirs = [numpy.get_include(), 'src/_miriad', 
+            include_dirs = [numpy.get_include(), 'src/_miriad',
                 'src/_miriad/mir']),
         Extension('aipy._deconv', ['src/_deconv/deconv.cpp'],
             include_dirs = [numpy.get_include()]),

@@ -27,16 +27,16 @@ class UV(miriad.UV):
     def write_pol(self,pol):
         """Reliably write polarization metadata."""
         try: return self._wrvr('pol','i',miriad.str2pol[pol])
-        except(KeyError): 
+        except(KeyError):
             print pol,"is not a reasonable polarization value!"
             return
 
-#  _   _ _   _ _ _ _           _____                 _   _                 
-# | | | | |_(_) (_) |_ _   _  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
+#  _   _ _   _ _ _ _           _____                 _   _
+# | | | | |_(_) (_) |_ _   _  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___
 # | | | | __| | | | __| | | | | |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
 # | |_| | |_| | | | |_| |_| | |  _|| |_| | | | | (__| |_| | (_) | | | \__ \
 #  \___/ \__|_|_|_|\__|\__, | |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
-#                      |___/        
+#                      |___/
 
 p2i = {'x':0,'y':1} #indices for each polarization
 
@@ -49,8 +49,8 @@ Sigma = {'t': n.matrix([[1,0],[0,1]]),
 
 def ParAng(ha,dec,lat):
     """
-    For any hour angle, declenation in an image, calculate the paralactic angle at that point. Remember to multiply this by 2 when you're
-    doing anything with it...
+    For any hour angle, declenation in an image, calculate the paralactic angle at that point.
+    Remember to multiply this by 2 when you're doing anything with it...
     """
     up = (n.cos(lat)*n.sin(ha))
     down = (n.sin(lat)*n.cos(dec))-(n.cos(lat)*n.sin(dec)*n.cos(ha))
@@ -62,12 +62,11 @@ def ParAng(ha,dec,lat):
 # | |_) |  __/ (_| | | | | | |
 # |____/ \___|\__,_|_| |_| |_|
 
-#     _          _                         
-#    / \   _ __ | |_ ___ _ __  _ __   __ _ 
+#     _          _
+#    / \   _ __ | |_ ___ _ __  _ __   __ _
 #   / _ \ | '_ \| __/ _ \ '_ \| '_ \ / _` |
 #  / ___ \| | | | ||  __/ | | | | | | (_| |
 # /_/   \_\_| |_|\__\___|_| |_|_| |_|\__,_|
-
 
 class Antenna(fit.Antenna):
     '''XXX tell user that phsoff must be a dict'''
@@ -140,7 +139,7 @@ class Antenna(fit.Antenna):
             except(KeyError): pass
         if changed: self.update()
         return changed
-    #new stuff 
+    #new stuff
     def G_i(self):
         """2x2 gain matrix"""
         amp_i = self.passband()
@@ -156,12 +155,12 @@ class Antenna(fit.Antenna):
         return [n.dot(G_i[i],D_i) for i in range(len(G_i))]
 
 
-#     _          n                            _                         
-#    / \   _ __ | |_ ___ _ __  _ __   __ _   / \   _ __ _ __ __ _ _   _ 
+#     _          n                            _
+#    / \   _ __ | |_ ___ _ __  _ __   __ _   / \   _ __ _ __ __ _ _   _
 #   / _ \ | '_ \| __/ _ \ '_ \| '_ \ / _` | / _ \ | '__| '__/ _` | | | |
 #  / ___ \| | | | ||  __/ | | | | | | (_| |/ ___ \| |  | | | (_| | |_| |
 # /_/   \_\_| |_|\__\___|_| |_|_| |_|\__,_/_/   \_\_|  |_|  \__,_|\__, |
-#                                                                 |___/ 
+#                                                                 |___/
 
 class AntennaArray(fit.AntennaArray):
     def gen_phs_nocal(self,src,i,j,pol,mfreq=0.150,ionref=None,srcshape=None,resolve_src=False):

@@ -1,6 +1,6 @@
-__gitlog__ = """513fb79
-Updated pol.py -- fixed minor bugs
+__gitlog__ = """dfa45ab
+hacked dsp.py to return array of ones for window='none' option
 --
-David Moore
+David F. Moore
 damo@sas.upenn.edu
-2012-02-24 11:20:18 -0500"""
+2013-07-18 14:04:48 -0400"""
