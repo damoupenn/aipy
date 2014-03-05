@@ -127,7 +127,7 @@ def parse_srcs(src_str, cat_str):
             # Check that this is really an ra_dec pair
             for piece in ra.split(':'): piece = float(piece)
             for piece in dec.split(':'): piece = float(piece)
-            src_opt[i] = fit.RadioFixedBody(ra,dec, name=s)
+            src_opt[i] = src.RadioFixedBody(ra,dec, name=s)
         except(AssertionError,ValueError): continue
     return src_opt, None, cats
 
