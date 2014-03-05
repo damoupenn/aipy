@@ -4,7 +4,52 @@ A reworking of the aipy src and src catalog objects.
 
 import numpy as np
 import ephem
-from aipy import coord
+import coord
+
+class PointingError(Exception):
+    def __init__(self, value):
+        self.parameter = value
+    def __str__(self):
+        return str(self.parameter)
+
+#  ____           _ _      ____                  _       _
+# |  _ \ __ _  __| (_) ___/ ___| _ __   ___  ___(_) __ _| |
+# | |_) / _` |/ _` | |/ _ \___ \| '_ \ / _ \/ __| |/ _` | |
+# |  _ < (_| | (_| | | (_) |__) | |_) |  __/ (__| | (_| | |
+# |_| \_\__,_|\__,_|_|\___/____/| .__/ \___|\___|_|\__,_|_|
+#                               |_|
+
+class RadioSpecial():
+    """A moving source (Sun,Moon,planets).  Combines ephem versions of these
+    objects with RadioBody."""
+    def __init__(self, name, mfreq=.150,
+            ionref=(0.,0.), srcshape=(0.,0.,0.), **kwargs):
+        """`name' is used to lookup appropriate ephem celestial object."""
+        self.src_name = name
+        self.mfreq = mfreq
+        self.ionref = list(ionref)
+        self.srcshape = list(srcshape)
+        self.Body = eval('ephem.%s()' % name)
+    def __getattr__(self, nm):
+        """First try to access attribute from this class, but if that fails,
+        try to get it from the underlying ephem object."""
+        try: return object.__getattr__(self, nm)
+        except(AttributeError): return self.Body.__getattribute__(nm)
+    def __setattr__(self, nm, val):
+        """First try to set attribute for this class, buf if that fails,
+        try to set it for the underlying ephem object."""
+        try: object.__setattr__(self, nm, val)
+        except(AttributeError): return setattr(self.Body, nm, val)
+    def compute(self, observer):
+        self.Body.compute(observer)
+        self.map = coord.eq2top_m(observer.sidereal_time()-self._ra, self._dec)
+
+#  ____           _ _       _____ _              _ ____            _
+# |  _ \ __ _  __| (_) ___ |  ___(_)_  _____  __| | __ )  ___   __| |_   _
+# | |_) / _` |/ _` | |/ _ \| |_  | \ \/ / _ \/ _` |  _ \ / _ \ / _` | | | |
+# |  _ < (_| | (_| | | (_) |  _| | |>  <  __/ (_| | |_) | (_) | (_| | |_| |
+# |_| \_\__,_|\__,_|_|\___/|_|   |_/_/\_\___|\__,_|____/ \___/ \__,_|\__, |
+#                                                                    |___/
 
 class RadioFixedBody(ephem.FixedBody):
     def __init__(self, ra, dec, jys, index, mfreq=0.15, name='', epoch=ephem.J2000,
@@ -83,6 +128,12 @@ class RadioFixedBody(ephem.FixedBody):
         try: self.PA = prms['PA']
         except(KeyError): pass
 
+#  ____            ____      _        _
+# / ___| _ __ ___ / ___|__ _| |_ __ _| | ___   __ _
+# \___ \| '__/ __| |   / _` | __/ _` | |/ _ \ / _` |
+#  ___) | | | (__| |__| (_| | || (_| | | (_) | (_| |
+# |____/|_|  \___|\____\__,_|\__\__,_|_|\___/ \__, |
+#                                             |___/
 
 class SrcCatalog(dict):
     def __init__(self, *srcs, **kwargs):
