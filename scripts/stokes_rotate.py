@@ -1,57 +1,70 @@
-#!/usr/bin/python
+#! /usr/bin/env python
+
 """
-Rotate linearly polarized data into Stokes' I,Q,U,V
+    Rotate linearly polarized data into Stokes' IQUV
 """
+
 import aipy as a
 import numpy as np
-import optparse,sys,os
+import optparse, sys, os
 
 o = optparse.OptionParser()
-o.set_usage('stokes_rotate.py *.uv')
+o.set_usage('StokesRotate.py *.uv')
 o.set_description(__doc__)
-opts,args = o.parse_args(sys.argv[1:])
-
+opts, args = o.parse_args(sys.argv[1:])
 
 for uvfile in args:
-
     infile = uvfile
     outfile = infile+'S'
 
-    print infile,'-->',outfile
+    print infile, '-->', outfile
+
     if os.path.exists(outfile):
-        print 'File exists, skipping'
+        print 'File exists, skipping...'
         continue
 
     uv = a.pol.UV(uvfile)
     DD = {}
     for (uvw,t,bl),d,f in uv.all(raw=True):
-        plzn = uv.read_pol()
+        pol = uv.read_pol()
         if not bl in DD.keys(): DD[bl] = {}
         if not t in DD[bl].keys(): DD[bl][t] = {}
-        if not plzn in DD[bl][t].keys():
-            DD[bl][t][plzn] = np.ma.array(d,mask=f)
-    del(uv)
-
-    def mfunc(uv,p,d,f):
-        uvw,t,bl = p
-        plzn = uvi.read_pol()
-        try:
-            if plzn == 'xx':
-                uvo.write_pol('I')
-                return p,DD[bl][t]['xx'] + DD[bl][t]['yy'],f
-            if plzn == 'xy':
-                uvo.write_pol('Q')
-                return p,DD[bl][t]['xx'] - DD[bl][t]['yy'],f
-            if plzn == 'yx':
-                uvo.write_pol('U')
-                return p,DD[bl][t]['xy'] + DD[bl][t]['yx'],f
-            if plzn == 'yy':
-                uvo.write_pol('V')
-                return p,-1.j*(DD[bl][t]['xy'] - DD[bl][t]['yx']),f
-        except(KeyError):
-            return None, None, None
+        if not pol in DD[bl][t].keys():
+            DD[bl][t][pol] = np.ma.array(d, mask=f)
+    del uv
 
     uvi = a.pol.UV(infile)
-    uvo = a.pol.UV(outfile,status='new')
+    uvo = a.pol.UV(outfile, status='new')
     uvo.init_from_uv(uvi)
-    uvo.pipe(uvi,raw=True,mfunc=mfunc,append2hist='XY --> STOKES \n')
+    #this is just being more explicit about header info than uv.all()
+    while True:
+        try:
+            p,d,f = uvi.read(raw=True)
+            uvw,t,bl = p
+            pol = uvi.read_pol()
+            try:
+                if pol == 'xx':
+                    uvo.write_pol('I')
+                    f = DD[bl][t]['xx'].mask | DD[bl][t]['yy'].mask
+                    d = DD[bl][t]['xx'] + DD[bl][t]['yy']
+                elif pol == 'xy':
+                    uvo.write_pol('Q')
+                    f = DD[bl][t]['xx'].mask | DD[bl][t]['yy'].mask
+                    d = DD[bl][t]['xx'] - DD[bl][t]['yy']
+                elif pol == 'yx':
+                    uvo.write_pol('U')
+                    f = DD[bl][t]['xy'].mask | DD[bl][t]['yx'].mask
+                    d = DD[bl][t]['xy'] + DD[bl][t]['yx']
+                elif pol == 'yy':
+                    uvo.write_pol('V')
+                    f = DD[bl][t]['xy'].mask | DD[bl][t]['yx'].mask
+                    d = -1.j*(DD[bl][t]['xy'] - DD[bl][t]['yx'])
+                uvo.write(p,d,f)
+            except(KeyError):
+                pass
+        except(IOError):
+            break
+
+    uvo._wrhd('history', uvo['history'] + "XY --> STOKES \n")
+
+    del uvi, uvo
