@@ -29,7 +29,7 @@ for infile in args:
     print infile,'-->',outfile
     if os.path.exists(outfile):
         print 'File exists, skipping....'
-        continue 
+        continue
 
     uvi = a.miriad.UV(infile)
     uvo = a.miriad.UV(outfile, status='new')

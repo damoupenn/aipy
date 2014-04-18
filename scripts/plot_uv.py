@@ -234,7 +234,7 @@ for cnt, bl in enumerate(bls):
     else:
         i,j,pol = map(int,bl.split(','))
         pol = a.miriad.pol2str[pol]
-        label = '%d%s,%d%s ' % (i,pol[0],j,pol[1]) 
+        label = '%d%s,%d%s ' % (i,pol[0],j,pol[1])
     if is_chan_range and is_time_range:
         if opts.fringe:
             if opts.time_axis == 'index':
@@ -285,7 +285,7 @@ for cnt, bl in enumerate(bls):
         elif dmin is None: dmin = d.min()
         else: dmin = min(dmin,d.min())
         plots[cnt+1] = p.imshow(d, extent=(c1,c2,t2,t1), origin='upper',
-            aspect='auto', interpolation='nearest', 
+            aspect='auto', interpolation='nearest',
             vmax=dmax, vmin=dmin, cmap=cmap)
         p.colorbar(shrink=0.5)
         p.xlabel(xlabel); p.ylabel(ylabel)
@@ -365,9 +365,9 @@ for cnt, bl in enumerate(bls):
     if not opts.share:
         i,j,pol = map(int,bl.split(','))
         pol = a.miriad.pol2str[pol]
-        title = '%d%s,%d%s ' % (i,pol[0],j,pol[1]) 
+        title = '%d_%d, %s ' % (i,j,pol)
         p.title(title)
-if not opts.nolegend and (not is_time_range or not is_chan_range): 
+if not opts.nolegend and (not is_time_range or not is_chan_range):
     p.legend(loc='best')
 
 # Save to a file or pop up a window

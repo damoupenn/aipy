@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 """
 Rotate linearly polarized data into Stokes' I,Q,U,V
 """
@@ -35,18 +35,21 @@ for uvfile in args:
     def mfunc(uv,p,d,f):
         uvw,t,bl = p
         plzn = uvi.read_pol()
-        if plzn == 'xx':
-            uvo.write_pol('I')
-            return p,DD[bl][t]['xx'] + DD[bl][t]['yy'],f
-        if plzn == 'xy':
-            uvo.write_pol('Q')
-            return p,DD[bl][t]['xx'] - DD[bl][t]['yy'],f
-        if plzn == 'yx':
-            uvo.write_pol('U')
-            return p,DD[bl][t]['xy'] + DD[bl][t]['yx'],f
-        if plzn == 'yy':
-            uvo.write_pol('V')
-            return p,-1.j*(DD[bl][t]['xy'] - DD[bl][t]['yx']),f
+        try:
+            if plzn == 'xx':
+                uvo.write_pol('I')
+                return p,DD[bl][t]['xx'] + DD[bl][t]['yy'],f
+            if plzn == 'xy':
+                uvo.write_pol('Q')
+                return p,DD[bl][t]['xx'] - DD[bl][t]['yy'],f
+            if plzn == 'yx':
+                uvo.write_pol('U')
+                return p,DD[bl][t]['xy'] + DD[bl][t]['yx'],f
+            if plzn == 'yy':
+                uvo.write_pol('V')
+                return p,-1.j*(DD[bl][t]['xy'] - DD[bl][t]['yx']),f
+        except(KeyError):
+            return None, None, None
 
     uvi = a.pol.UV(infile)
     uvo = a.pol.UV(outfile,status='new')
