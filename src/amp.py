@@ -5,6 +5,104 @@ Mostly, this means adding gain/amplitude information vs. frequency.
 
 import phs, numpy as n, ephem, coord, healpix
 
+#  ____           _ _       ____            _
+# |  _ \ __ _  __| (_) ___ | __ )  ___   __| |_   _
+# | |_) / _` |/ _` | |/ _ \|  _ \ / _ \ / _` | | | |
+# |  _ < (_| | (_| | | (_) | |_) | (_) | (_| | |_| |
+# |_| \_\__,_|\__,_|_|\___/|____/ \___/ \__,_|\__, |
+#                                             |___/
+
+class RadioBody:
+    """Class defining flux and spectral index of a celestial source."""
+    def __init__(self, jys, index):
+        """jys = source strength in Janskies
+        mfreq = frequency (in GHz) where strength was measured
+        index = index of power-law spectral model of source emission."""
+        self._jys = jys
+        self.index = index
+    def update_jys(self, afreqs):
+        """Update fluxes relative to the provided observer.  Must be
+        called at each time step before accessing information."""
+        self.afreqs = afreqs
+        self.jys = self._jys * (afreqs / self.mfreq)**self.index
+    def get_jys(self):
+        """Return the fluxes vs. freq that should be used for simulation."""
+        return self.jys
+
+#  ____           _ _       _____ _              _ ____            _
+# |  _ \ __ _  __| (_) ___ |  ___(_)_  _____  __| | __ )  ___   __| |_   _
+# | |_) / _` |/ _` | |/ _ \| |_  | \ \/ / _ \/ _` |  _ \ / _ \ / _` | | | |
+# |  _ < (_| | (_| | | (_) |  _| | |>  <  __/ (_| | |_) | (_) | (_| | |_| |
+# |_| \_\__,_|\__,_|_|\___/|_|   |_/_/\_\___|\__,_|____/ \___/ \__,_|\__, |
+#                                                                    |___/
+
+class RadioFixedBody(phs.RadioFixedBody, RadioBody):
+    """Class representing a source at fixed RA,DEC.  Adds flux information to
+    phs.RadioFixedBody."""
+    def __init__(self, ra, dec, name='', epoch=ephem.J2000,
+            jys=0., index=-1, mfreq=.150,
+            ionref=(0.,0.), srcshape=(0.,0.,0.), **kwargs):
+        """ra = source's right ascension (epoch=J2000)
+        dec = source's declination (epoch=J2000)
+        jys = source strength in Janskies at mfreq)
+        mfreq = frequency (in GHz) where source strength was measured
+        index = power-law index of source emission vs. freq."""
+        phs.RadioFixedBody.__init__(self, ra, dec, mfreq=mfreq, name=name,
+            epoch=epoch, ionref=ionref, srcshape=srcshape)
+        RadioBody.__init__(self, jys, index)
+    def __str__(self):
+        outstr = phs.RadioFixedBody.__str__(self)
+        try: outstr = outstr +'\t'+ str(self._jys)
+        except(AttributeError): outstr = outstr + '\t'
+        try: outstr += '\t' + str(self.index)
+        except(AttributeError): outstr += '\t'
+        outstr += '\t'+str(self.mfreq)
+        try: outstr = outstr +'\t'+ str(self.jys[0])
+        except(AttributeError): outstr = outstr + '\t'
+        outstr += '\t'+str(self.afreqs[0])
+        return outstr
+    def compute(self, observer):
+        phs.RadioFixedBody.compute(self, observer)
+        RadioBody.update_jys(self, observer.get_afreqs())
+
+#  ____           _ _      ____                  _       _
+# |  _ \ __ _  __| (_) ___/ ___| _ __   ___  ___(_) __ _| |
+# | |_) / _` |/ _` | |/ _ \___ \| '_ \ / _ \/ __| |/ _` | |
+# |  _ < (_| | (_| | | (_) |__) | |_) |  __/ (__| | (_| | |
+# |_| \_\__,_|\__,_|_|\___/____/| .__/ \___|\___|_|\__,_|_|
+#                               |_|
+
+class RadioSpecial(phs.RadioSpecial, RadioBody):
+    """Class representing moving sources (Sun,Moon,planets).  Adds flux
+    information to phs.RadioSpecial."""
+    def __init__(self, name, jys=0., index=-1., mfreq=.150,
+            ionref=(0.,0.), srcshape=(0.,0.,0.), **kwargs):
+        """jys = source strength in Janskies at mfreq)
+        mfreq = frequency (in GHz) where source strength was measured
+        index = power-law index of source emission vs. freq."""
+        phs.RadioSpecial.__init__(self, name, mfreq=mfreq,
+            ionref=ionref, srcshape=srcshape)
+        RadioBody.__init__(self, jys, index)
+    def compute(self, observer):
+        phs.RadioSpecial.compute(self, observer)
+        RadioBody.update_jys(self, observer.get_afreqs())
+
+#  ____            ____      _        _
+# / ___| _ __ ___ / ___|__ _| |_ __ _| | ___   __ _
+# \___ \| '__/ __| |   / _` | __/ _` | |/ _ \ / _` |
+#  ___) | | | (__| |__| (_| | || (_| | | (_) | (_| |
+# |____/|_|  \___|\____\__,_|\__\__,_|_|\___/ \__, |
+#                                             |___/
+
+class SrcCatalog(phs.SrcCatalog):
+    """Class for holding a catalog of celestial sources."""
+    def get_jys(self, srcs=None):
+        """Return list of fluxes of all src objects in catalog."""
+        if srcs is None: srcs = self.keys()
+        return n.array([self[s].get_jys() for s in srcs])
+    def update_jys(self, afreqs):
+        for s in self.keys(): self[s].update_jys(afreqs)
+
 #  ____
 # | __ )  ___  __ _ _ __ ___
 # |  _ \ / _ \/ _` | '_ ` _ \
